@@ -1,23 +1,29 @@
 {
   "name": "@highlandfarm/simple-quagga",
   "version": "0.1.0",
-  "description": "",
-  "main": "dist/index.ts",
+  "description": "Barcode scanner with sane defaults and lightweight interface, built on quagga2.",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "/dist"
+    "/dist",
+    "/examples"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc"
+    "build": "tsc && browserify dist/index.js --standalone SimpleQuagga > dist/bundle.js",
+    "server" : "python3 -m http.server"
   },
   "keywords": [],
   "author": "Josh Storz <josh@joshstorz.com>",
   "license": "MIT",
+  "private": true,
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
     "typescript": "^4.2.4"
+  },
+  "dependencies": {
+    "@ericblade/quagga2": "^1.3.1"
   }
 }
