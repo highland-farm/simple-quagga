@@ -35,16 +35,16 @@ export class BarcodeScanner {
     private readonly drawScanlineStyle?: QuaggaJSStyle;
 
     /** Quagga and video stream is started or not. */
-    private isStarted: boolean = false;
+    private isStarted = false;
 
     /** Code scanning (location/detection) is started or not. */
-    private isScanning: boolean = false;
+    private isScanning = false;
 
     /** Auto CSS stylesheet has been added to document (prevent from adding again on restart). */
-    private isAutoCssApplied: boolean = false;
+    private isAutoCssApplied = false;
 
     /** Number of scanCode() promises outstanding (callers waiting for a code scan). */
-    private numWaiting: number = 0;
+    private numWaiting = 0;
 
     /** Unclaimed code scan result (a waiting scanCode() caller will pick it up). */
     private lastResult?: QuaggaJSResultObject;
@@ -104,13 +104,13 @@ export class BarcodeScanner {
 
         // insert CSS rules if requested
         if (this.autoCss && !this.isAutoCssApplied) {
-            let domTarget = this.quaggaConfig.inputStream?.target;
+            const domTarget = this.quaggaConfig.inputStream?.target;
             if (!domTarget) {
                 throw new Error('Cannot apply auto CSS to undefined target');
             }
 
             // NOTE: this requires a direct supplied element to have an id
-            let selector = domTarget instanceof HTMLElement ? '#' + domTarget.id : String(domTarget);
+            const selector = domTarget instanceof HTMLElement ? '#' + domTarget.id : String(domTarget);
 
             // verify dom target is accessible
             try {
@@ -122,7 +122,7 @@ export class BarcodeScanner {
             }
 
             // create new stylesheet and insert into head
-            var style = document.createElement('style');
+            const style = document.createElement('style');
             document.head.appendChild(style);
             if (!style.sheet) {
                 throw new Error('Cannot create dynamic CSS stylesheet');
@@ -192,7 +192,7 @@ export class BarcodeScanner {
         }
 
         // claim and reset the internal result
-        let result = this.lastResult;
+        const result = this.lastResult;
         this.lastResult = undefined;
         this.numWaiting--;
 
@@ -300,6 +300,7 @@ export class BarcodeScanner {
             // Draw (green) box outline around potential positives
             result.boxes.forEach(box => {
                 if (box !== result.box) {
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, this.overlayContext, this.drawLocatedStyle!);
                 }
             });
@@ -312,7 +313,7 @@ export class BarcodeScanner {
      */
     private drawDetected(result: QuaggaJSResultObject): void {
         if (result.box && this.drawDetectedStyle) {
-            Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, this.overlayContext, this.drawDetectedStyle!);
+            Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, this.overlayContext, this.drawDetectedStyle);
         }
     }
 

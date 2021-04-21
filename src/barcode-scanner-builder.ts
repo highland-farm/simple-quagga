@@ -4,8 +4,8 @@ import { QuaggaJSStyle } from '@ericblade/quagga2';
 /** Helper to build a barcode scanner with various configuration options */
 export class BarcodeScannerBuilder {
     private readonly _domTarget: HTMLElement | string;
-    private readonly _readerTypes: Array<ReaderType> = [];
-    private _autoCss: boolean = false;
+    private readonly _readerTypes: ReaderType[] = [];
+    private _autoCss = false;
     private _codeValidator?: CodeValidatorCallback;
     private _drawLocatedStyle?: QuaggaJSStyle;
     private _drawDetectedStyle?: QuaggaJSStyle;
@@ -32,7 +32,7 @@ export class BarcodeScannerBuilder {
      * @param enabled Enable auto CSS functionality.
      * @returns Self for chaining builder methods.
      */
-    withAutoCss(enabled: boolean = true): BarcodeScannerBuilder {
+    withAutoCss(enabled = true): BarcodeScannerBuilder {
         this._autoCss = enabled;
         return this;
     }
@@ -54,7 +54,7 @@ export class BarcodeScannerBuilder {
      * @param width Width of box outline.
      * @returns Self for chaining methods.
      */
-    withDrawLocated(enabled: boolean = true, color: string = 'green', width: number = 2): BarcodeScannerBuilder {
+    withDrawLocated(enabled = true, color = 'green', width = 2): BarcodeScannerBuilder {
         if (enabled) {
             this._drawLocatedStyle = { color, lineWidth: width };
         }
@@ -68,7 +68,7 @@ export class BarcodeScannerBuilder {
      * @param width Width of box outline.
      * @returns Self for chaining methods.
      */
-    withDrawDetected(enabled: boolean = true, color: string = '#00F', width: number = 2): BarcodeScannerBuilder {
+    withDrawDetected(enabled = true, color = '#00F', width = 2): BarcodeScannerBuilder {
         if (enabled) {
             this._drawDetectedStyle = { color, lineWidth: width };
         }
@@ -82,7 +82,7 @@ export class BarcodeScannerBuilder {
      * @param width Width of scan line.
      * @returns Self for chaining methods.
      */
-    withDrawScanline(enabled: boolean = true, color: string = 'red', width: number = 3): BarcodeScannerBuilder {
+    withDrawScanline(enabled = true, color = 'red', width = 3): BarcodeScannerBuilder {
         if (enabled) {
             this._drawScanlineStyle = { color, lineWidth: width };
         }
@@ -90,7 +90,7 @@ export class BarcodeScannerBuilder {
     }
 
     /** Build BarcodeScanner after specifying all options. */
-    build() {
+    build(): BarcodeScanner {
         // default to CODE_128 if none provided
         if (this._readerTypes.length === 0) {
             this._readerTypes.push(ReaderType.CODE_128);
@@ -101,31 +101,31 @@ export class BarcodeScannerBuilder {
 
     // getters for BarcodeScanner to use when initializing
 
-    get domTarget() {
+    get domTarget(): HTMLElement | string {
         return this._domTarget;
     }
 
-    get readerTypes() {
+    get readerTypes(): ReaderType[] {
         return this._readerTypes;
     }
 
-    get autoCss() {
+    get autoCss(): boolean {
         return this._autoCss;
     }
 
-    get codeValidator() {
+    get codeValidator(): CodeValidatorCallback | undefined {
         return this._codeValidator;
     }
 
-    get drawLocatedStyle() {
+    get drawLocatedStyle(): QuaggaJSStyle | undefined {
         return this._drawLocatedStyle;
     }
 
-    get drawDetectedStyle() {
+    get drawDetectedStyle(): QuaggaJSStyle | undefined {
         return this._drawDetectedStyle;
     }
 
-    get drawScanlineStyle() {
+    get drawScanlineStyle(): QuaggaJSStyle | undefined {
         return this._drawScanlineStyle;
     }
 }

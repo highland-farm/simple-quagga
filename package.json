@@ -11,7 +11,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc && browserify dist/index.js --standalone SimpleQuagga > dist/bundle.js",
-    "server" : "python3 -m http.server"
+    "server": "python3 -m http.server",
+    "lint": "eslint \"src/**\""
   },
   "keywords": [],
   "author": "Josh Storz <josh@joshstorz.com>",
@@ -21,6 +22,9 @@
     "access": "public"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
+    "eslint": "^7.24.0",
     "typescript": "^4.2.4"
   },
   "dependencies": {
