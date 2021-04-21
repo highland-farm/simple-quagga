@@ -56,9 +56,9 @@ export class BarcodeScanner {
         inputStream: {
             name: 'live',
             type: 'LiveStream',                         // stream live from camera device
-            constraints: {
-                width: {min: 1024},
-                height: {min: 768},
+            constraints: {                              // FIXME: media constraints needs a lot more real world testing
+                width: {min: 800},                      //        and possibly configurability or detection logic;
+                height: {min: 600},                     //        this usually will select the max resolution
                 facingMode: 'environment',              // rear camera on a phone or tablet
                 aspectRatio: {min: 1, max: 2},
             },
@@ -79,7 +79,7 @@ export class BarcodeScanner {
     constructor(barcodeReaderBuilder: BarcodeScannerBuilder) {
         // load domTarget and barcode reader into config object
         Object.assign(this.quaggaConfig.inputStream ?? {}, {target: barcodeReaderBuilder.domTarget});
-        Object.assign(this.quaggaConfig.decoder ?? {}, {readers:barcodeReaderBuilder.readerTypes});
+        Object.assign(this.quaggaConfig.decoder ?? {}, {readers: barcodeReaderBuilder.readerTypes});
 
         // misc config
         this.autoCss = barcodeReaderBuilder.autoCss;
@@ -180,7 +180,7 @@ export class BarcodeScanner {
         this.numWaiting++;
         this.resume();
 
-        // wait for next detected barcode result, checking ever 100ms
+        // wait for next detected barcode result, checking every 100ms
         while (!this.lastResult && this.isStarted) {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
@@ -228,7 +228,7 @@ export class BarcodeScanner {
      * @param result Scan result of single video frame from Quagga.
      */
     private onQuaggaProcessed(result: QuaggaJSResultObject): void {
-        if (this.numWaiting == 0) {
+        if (this.numWaiting === 0) {
             // if nobody is waiting for a result, stop detection and clear internal result
             this.pause();
             this.clearOverlay();
@@ -266,7 +266,7 @@ export class BarcodeScanner {
                 this.drawDetected(result);
             }
 
-            // draw scaline if configured
+            // draw scanline if configured
             if (this.drawScanlineStyle) {
                 this.drawScanline(result);
             }

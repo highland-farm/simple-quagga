@@ -32,7 +32,7 @@ export class BarcodeScannerBuilder {
      * @param enabled Enable auto CSS functionality.
      * @returns Self for chaining builder methods.
      */
-    withAutoCss(enabled: boolean = true) {
+    withAutoCss(enabled: boolean = true): BarcodeScannerBuilder {
         this._autoCss = enabled;
         return this;
     }
@@ -92,7 +92,7 @@ export class BarcodeScannerBuilder {
     /** Build BarcodeScanner after specifying all options. */
     build() {
         // default to CODE_128 if none provided
-        if (this._readerTypes.length == 0) {
+        if (this._readerTypes.length === 0) {
             this._readerTypes.push(ReaderType.CODE_128);
         }
 
