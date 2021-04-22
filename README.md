@@ -6,9 +6,9 @@ To run/test in browser during development (this is temporary):
 
 1. Make sure browserify is installed as a global npm package
 1. Make sure python3 is installed (simple web server)
-1. Run ```npm run build``` to run ```tsc``` (compile TypeScript) and ```browserify``` (standalone bundle) to ```dist/bundle.js``` testing output
-1. Run ```npm run server``` to start python's basic built in webserver (yes there are better JS options I'm sure)
-1. Navigate web browser to ```http://localhost:8000/examples/vanilla_simple.html```
+1. Run `npm run build` to run `tsc` (compile TypeScript) and `browserify` (standalone bundle) to `dist/bundle.js` testing output
+1. Run `npm run server` to start python's basic built in webserver (yes there are better JS options I'm sure)
+1. Navigate web browser to `http://localhost:8000/examples/vanilla_simple.html`
 1. Shock and awe that it actually sort of works
 
 Todo:
