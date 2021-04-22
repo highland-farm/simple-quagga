@@ -3,7 +3,7 @@ import {
   ReaderType,
   CodeValidatorCallback,
 } from './barcode-scanner';
-import { QuaggaJSStyle } from '@ericblade/quagga2';
+import type { QuaggaJSStyle } from '@ericblade/quagga2';
 
 /** Helper to build a barcode scanner with various configuration options */
 export class BarcodeScannerBuilder {

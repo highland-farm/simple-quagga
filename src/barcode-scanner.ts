@@ -1,6 +1,6 @@
-import { BarcodeScannerBuilder } from './barcode-scanner-builder';
+import type { BarcodeScannerBuilder } from './barcode-scanner-builder';
 import Quagga from '@ericblade/quagga2';
-import {
+import type {
   QuaggaJSConfigObject,
   QuaggaJSResultObject,
   QuaggaJSStyle,
@@ -62,8 +62,8 @@ export class BarcodeScanner {
       type: 'LiveStream', // stream live from camera device
       constraints: {
         // FIXME: media constraints needs a lot more real world testing
-        width: { min: 800 }, //        and possibly configurability or detection logic;
-        height: { min: 600 }, //        this usually will select the max resolution
+        width: { min: 1024 }, //        and possibly configurability or detection logic;
+        height: { min: 768 }, //        this usually will select the max resolution
         facingMode: 'environment', // rear camera on a phone or tablet
         aspectRatio: { min: 1, max: 2 },
       },

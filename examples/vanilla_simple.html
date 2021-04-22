@@ -1,5 +1,7 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
+    <meta charset="utf-8" />
     <title>Vanilla JavaScript Simple Barcode Scanner Example</title>
   </head>
   <body>
@@ -16,9 +18,9 @@
       </li>
     </ol>
     <p>
-      <button onclick="toggleVideo(this)">Start Video</button>
-      <button onclick="toggleVisible(this)">Hide Video</button>
-      <button onclick="scanCode(this)">Scan Code</button>
+      <button id="video_btn">Start Video</button>
+      <button id="hide_btn">Hide Video</button>
+      <button id="scan_btn">Scan Code</button>
       <span id="code_output">No scan yet.</span>
     </p>
 
@@ -35,15 +37,13 @@
       "
     ></div>
 
-    <!-- FIXME: don't use browserify output eventually -->
-    <script src="../dist/bundle.js"></script>
+    <script type="module">
+      import { BarcodeScannerBuilder, ReaderType } from '../index.js';
 
-    <script>
-      // FIXME: SimpleQuagga module name used here is set when running browserify
       let scanner =
-        //new SimpleQuagga.BarcodeScannerBuilder(document.getElementById('reader'))   // viewport provided by HTMLElement object
-        new SimpleQuagga.BarcodeScannerBuilder('#reader') // viewport provided by CSS direct id selector
-          .addReader(SimpleQuagga.ReaderType.CODE_128)
+        //new BarcodeScannerBuilder(document.getElementById('reader'))   // viewport provided by HTMLElement object
+        new BarcodeScannerBuilder('#reader') // viewport provided by CSS direct id selector
+          .addReader(ReaderType.CODE_128)
           .withAutoCss() // automatically position overlay over video and autoscale to container
           .withDrawLocated() // draw boxes around potential code locations in the video frame
           .withDrawDetected() // draw a box around full code when detected (and validated if configured)
@@ -51,10 +51,12 @@
           .build();
 
       // request code from running scanner
-      const scanCode = (btn) => {
+      document.getElementById('scan_btn').addEventListener('click', (event) => {
+        const btn = event.target;
+        btn.disabled = true;
+
         const e = document.getElementById('code_output');
         e.innerText = 'Scanning...';
-        btn.disabled = true;
 
         // request code scan
         scanner
@@ -65,24 +67,28 @@
             throw err;
           }) // error: show message
           .finally(() => (btn.disabled = false)); // always: re-enable button after
-      };
+      });
 
       // toggle scanner (and video stream) on and off
       let isRunning = false;
-      const toggleVideo = (btn) => {
-        btn.disabled = true;
+      document
+        .getElementById('video_btn')
+        .addEventListener('click', (event) => {
+          const btn = event.target;
+          btn.disabled = true;
 
-        // request start or stop depending on current state
-        (isRunning ? scanner.stop() : scanner.start())
-          .then(() => {
-            isRunning ^= true;
-            btn.innerText = isRunning ? 'Stop Video' : 'Start Video';
-          })
-          .finally(() => (btn.disabled = false));
-      };
+          // request start or stop depending on current state
+          (isRunning ? scanner.stop() : scanner.start())
+            .then(() => {
+              isRunning ^= true;
+              btn.innerText = isRunning ? 'Stop Video' : 'Start Video';
+            })
+            .finally(() => (btn.disabled = false));
+        });
 
       // toggle viewport visibility
-      const toggleVisible = (btn) => {
+      document.getElementById('hide_btn').addEventListener('click', (event) => {
+        const btn = event.target;
         const e = document.getElementById('reader');
         if (e.style.display === 'none') {
           e.style.display = 'block';
@@ -91,7 +97,7 @@
           e.style.display = 'none';
           btn.innerText = 'Show Video';
         }
-      };
+      });
     </script>
   </body>
 </html>
