@@ -27,6 +27,12 @@ export interface CodeValidatorCallback {
   (code: string): boolean;
 }
 
+/** Deferred promise as a signal between quagga callback and scanCode. */
+interface DeferredScanPromise {
+  reject: (reason: Error) => void;
+  resolve: (result: QuaggaJSResultObject) => void;
+}
+
 /** Barcode scanner with sane defaults and lightweight interface, built on quagga2. */
 export class BarcodeScanner {
   // configuration options from builder helper
@@ -41,17 +47,11 @@ export class BarcodeScanner {
   /** Quagga and video stream is started or not. */
   private isStarted = false;
 
-  /** Code scanning (location/detection) is started or not. */
-  private isScanning = false;
-
   /** Auto CSS stylesheet has been added to document (prevent from adding again on restart). */
   private isAutoCssApplied = false;
 
-  /** Number of scanCode() promises outstanding (callers waiting for a code scan). */
-  private numWaiting = 0;
-
-  /** Unclaimed code scan result (a waiting scanCode() caller will pick it up). */
-  private lastResult?: QuaggaJSResultObject;
+  /** Used to signal back to scanCode when there is a result. */
+  private scanDeferred?: DeferredScanPromise = undefined;
 
   /** Default config object with sane defaults. */
   // this works well in limited testing
@@ -108,55 +108,61 @@ export class BarcodeScanner {
    */
   async start(): Promise<void> {
     // resolve immediately if already started
-    if (this.isStarted) return;
-
-    // insert CSS rules if requested
-    if (this.autoCss && !this.isAutoCssApplied) {
-      const domTarget = this.quaggaConfig.inputStream?.target;
-      if (!domTarget) {
-        throw new Error('Cannot apply auto CSS to undefined target');
-      }
-
-      // NOTE: this requires a direct supplied element to have an id
-      const selector =
-        domTarget instanceof HTMLElement
-          ? '#' + domTarget.id
-          : String(domTarget);
-
-      // verify dom target is accessible
-      try {
-        if (!document.querySelector(selector)) {
-          throw new Error(`Cannot find element at selector: ${selector}`);
-        }
-      } catch (err) {
-        throw new Error(`Invalid selector: ${selector}`);
-      }
-
-      // create new stylesheet and insert into head
-      const style = document.createElement('style');
-      document.head.appendChild(style);
-      if (!style.sheet) {
-        throw new Error('Cannot create dynamic CSS stylesheet');
-      }
-
-      // this positions the drawing overlay correctly over the video and autoscales both to parent container
-      style.sheet.insertRule(`${selector} {display: flex}`);
-      style.sheet.insertRule(`${selector} canvas, video {width: 100%}`);
-      style.sheet.insertRule(
-        `${selector} canvas.drawingBuffer, video.drawingBuffer {margin-left: -100%}`
-      );
-
-      this.isAutoCssApplied = true;
+    if (this.isStarted) {
+      return;
     }
-
-    // initialize Quagga and begin video streaming
-    await Quagga.init(this.quaggaConfig);
-
-    // set up frame processed callback; no need to hook onDetected as we can do it all in this callback
-    Quagga.onProcessed(this.onQuaggaProcessed.bind(this));
-
     this.isStarted = true;
-    this.isScanning = false;
+
+    try {
+      // insert CSS rules if requested
+      if (this.autoCss && !this.isAutoCssApplied) {
+        const domTarget = this.quaggaConfig.inputStream?.target;
+        if (!domTarget) {
+          throw new Error('Cannot apply auto CSS to undefined target');
+        }
+
+        // NOTE: this requires a direct supplied element to have an id
+        const selector =
+          domTarget instanceof HTMLElement
+            ? '#' + domTarget.id
+            : String(domTarget);
+
+        // verify dom target is accessible
+        try {
+          if (!document.querySelector(selector)) {
+            throw new Error(`Cannot find element at selector: ${selector}`);
+          }
+        } catch (err) {
+          throw new Error(`Invalid selector: ${selector}`);
+        }
+
+        // create new stylesheet and insert into head
+        const style = document.createElement('style');
+        document.head.appendChild(style);
+        if (!style.sheet) {
+          throw new Error('Cannot create dynamic CSS stylesheet');
+        }
+
+        // this positions the drawing overlay correctly over the video and autoscales both to parent container
+        style.sheet.insertRule(`${selector} {display: flex}`);
+        style.sheet.insertRule(`${selector} canvas, video {width: 100%}`);
+        style.sheet.insertRule(
+          `${selector} canvas.drawingBuffer, video.drawingBuffer {margin-left: -100%}`
+        );
+
+        this.isAutoCssApplied = true;
+      }
+
+      // initialize Quagga and begin video streaming
+      await Quagga.init(this.quaggaConfig);
+
+      // set up frame processed callback; no need to hook onDetected as we can do it all in this callback
+      Quagga.onProcessed(this.onQuaggaProcessed.bind(this));
+    } catch (err) {
+      // reset back to not started if any error
+      this.isStarted = false;
+      throw err;
+    }
   }
 
   /**
@@ -171,13 +177,15 @@ export class BarcodeScanner {
 
     // remove code handler callback
     Quagga.offProcessed();
-    this.isStarted = false;
-    this.isScanning = false;
-    this.numWaiting = 0;
-    this.lastResult = undefined;
+
+    // signal that scanner is stopping to any pending scanCode request
+    if (this.scanDeferred) {
+      this.scanDeferred.reject(new Error('Scanner received stop command'));
+    }
 
     // stop video collection
     await Quagga.stop();
+    this.isStarted = false;
   }
 
   /**
@@ -189,51 +197,47 @@ export class BarcodeScanner {
       throw new Error('Scanner not started');
     }
 
-    // resume scanning
-    this.numWaiting++;
+    if (this.scanDeferred) {
+      throw new Error('Already scanning for code');
+    }
+
+    // resume locating & detecting
     this.resume();
 
-    // wait for next detected barcode result, checking every 100ms
-    while (!this.lastResult && this.isStarted) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
+    try {
+      // get result via deferred promise (resolved in quagga callback)
+      const result = await new Promise<QuaggaJSResultObject>(
+        (resolve, reject) => (this.scanDeferred = { resolve, reject })
+      );
+
+      // should never happen unless quagga callback has a bug
+      if (!result.codeResult || !result.codeResult.code) {
+        throw new Error('Internal scanner error');
+      }
+
+      // resolve with scanned barcode value
+      return result.codeResult.code;
+    } finally {
+      // reset so another barcode scan can be requested
+      this.scanDeferred = undefined;
+
+      // clear detection overlay after 200ms delay (enough time to display overlays to user)
+      setTimeout(() => {
+        if (!this.scanDeferred) {
+          this.clearOverlay();
+        }
+      }, 200);
     }
-
-    // video was stopped while waiting for a barcode
-    if (!this.isStarted) {
-      this.numWaiting--;
-      throw new Error('Scanner received stop command');
-    }
-
-    // claim and reset the internal result
-    const result = this.lastResult;
-    this.lastResult = undefined;
-    this.numWaiting--;
-
-    // should never happen unless JS magically gets threads
-    if (!result || !result.codeResult || !result.codeResult.code) {
-      throw new Error('Internal scanner error');
-    }
-
-    // resolve with scanned barcode value
-    return result.codeResult.code;
   }
 
   /** Resume barcode location & detection (video stream must be started). */
   private resume(): void {
-    // only resume if started and not scanning
-    if (this.isStarted && !this.isScanning) {
-      Quagga.start();
-      this.isScanning = true;
-    }
+    Quagga.start();
   }
 
   /** Pause barcode location & detection (video stream must be started). */
   private pause(): void {
-    // only pause if started and scanning
-    if (this.isStarted && this.isScanning) {
-      Quagga.pause();
-      this.isScanning = false;
-    }
+    Quagga.pause();
   }
 
   /**
@@ -241,25 +245,13 @@ export class BarcodeScanner {
    * @param result Scan result of single video frame from Quagga.
    */
   private onQuaggaProcessed(result: QuaggaJSResultObject): void {
-    if (this.numWaiting === 0) {
-      // if nobody is waiting for a result, stop detection and clear internal result
-      this.pause();
-      this.clearOverlay();
-      this.lastResult = undefined;
-      return;
-    } else if (this.lastResult) {
-      // waiting for someone to claim result
-      // do not pause scanning, but do not replace result either.
+    // return early if no scan request or no result on this frame
+    if (!this.scanDeferred || !result) {
       return;
     }
 
     // clear detection overlay canvas
     this.clearOverlay();
-
-    // return early if no result on this frame
-    if (!result) {
-      return;
-    }
 
     // draw located boxes if configured
     if (this.drawLocatedStyle) {
@@ -288,8 +280,9 @@ export class BarcodeScanner {
         this.drawScanline(result);
       }
 
-      // set last result for waiting scanCode() to pick up
-      this.lastResult = result;
+      // set last result for waiting scanCode() to pick up and stop scanning
+      this.scanDeferred.resolve(result);
+      this.pause();
     }
   }
 

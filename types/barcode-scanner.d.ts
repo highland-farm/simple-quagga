@@ -27,14 +27,10 @@ export declare class BarcodeScanner {
     private readonly drawScanlineStyle?;
     /** Quagga and video stream is started or not. */
     private isStarted;
-    /** Code scanning (location/detection) is started or not. */
-    private isScanning;
     /** Auto CSS stylesheet has been added to document (prevent from adding again on restart). */
     private isAutoCssApplied;
-    /** Number of scanCode() promises outstanding (callers waiting for a code scan). */
-    private numWaiting;
-    /** Unclaimed code scan result (a waiting scanCode() caller will pick it up). */
-    private lastResult?;
+    /** Used to signal back to scanCode when there is a result. */
+    private scanDeferred?;
     /** Default config object with sane defaults. */
     private readonly quaggaConfig;
     /** @param barcodeReaderBuilder Helper to configure barcode scanner. */
