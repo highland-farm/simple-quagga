@@ -5,6 +5,7 @@ export declare class BarcodeScannerBuilder {
     private readonly _domTarget;
     private readonly _readerTypes;
     private _autoCss;
+    private _resultImages;
     private _codeValidator?;
     private _drawLocatedStyle?;
     private _drawDetectedStyle?;
@@ -24,6 +25,12 @@ export declare class BarcodeScannerBuilder {
      * @returns Self for chaining builder methods.
      */
     withAutoCss(enabled?: boolean): BarcodeScannerBuilder;
+    /**
+     * Configure whether scan result includes image Blobs of the video frame and drawing overlay.
+     * @param enabled Enable result images functionality.
+     * @returns Self for chaining builder methods.
+     */
+    withResultImages(enabled?: boolean): BarcodeScannerBuilder;
     /**
      * Configure custom validator for detected codes. If set, will be called to verify a code is valid before accepting a scan.
      * @param callback Callback method for code validation.
@@ -59,6 +66,7 @@ export declare class BarcodeScannerBuilder {
     get domTarget(): HTMLElement | string;
     get readerTypes(): ReaderType[];
     get autoCss(): boolean;
+    get resultImages(): boolean;
     get codeValidator(): CodeValidatorCallback | undefined;
     get drawLocatedStyle(): QuaggaJSStyle | undefined;
     get drawDetectedStyle(): QuaggaJSStyle | undefined;

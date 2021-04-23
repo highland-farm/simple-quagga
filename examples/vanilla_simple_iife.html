@@ -60,7 +60,7 @@
         // request code scan
         scanner
           .scanCode()
-          .then((c) => (e.innerText = c)) // success: show scanned code
+          .then((r) => (e.innerText = r.code)) // success: show scanned code
           .catch((err) => {
             e.innerText = err;
             throw err;

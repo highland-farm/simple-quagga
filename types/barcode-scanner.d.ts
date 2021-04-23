@@ -18,9 +18,19 @@ export declare enum ReaderType {
 export interface CodeValidatorCallback {
     (code: string): boolean;
 }
+/** Barcode scan result. */
+export interface ScanResult {
+    /** String representation of scan result. */
+    code: string;
+    /** Promise resolving to Blob image of video frame (if configured). */
+    image?: Promise<Blob>;
+    /** Promise resolving to Blob image of drawing overlay (if configured). */
+    overlay?: Promise<Blob>;
+}
 /** Barcode scanner with sane defaults and lightweight interface, built on quagga2. */
 export declare class BarcodeScanner {
     private readonly autoCss;
+    private readonly resultImages;
     private readonly codeValidator?;
     private readonly drawLocatedStyle?;
     private readonly drawDetectedStyle?;
@@ -47,13 +57,19 @@ export declare class BarcodeScanner {
     stop(): Promise<void>;
     /**
      * Request a barcode scan. Scanner must be started (video is streaming).
-     * @returns Promise that resolves with barcode value when it is detected (and validated if configured).
+     * @returns Promise that resolves with ScanResult when it is detected (and validated if configured).
      */
-    scanCode(): Promise<string>;
+    scanCode(): Promise<ScanResult>;
     /** Resume barcode location & detection (video stream must be started). */
     private resume;
     /** Pause barcode location & detection (video stream must be started). */
     private pause;
+    /**
+     * Wrap HTMLCanvasElement.toBlob() callback with a Promise.
+     * @param canvas Canvas with image to capture.
+     * @returns Promise that will be resolved after Blob is created.
+     */
+    private getCanvasBlobPromise;
     /**
      * Quagga callback on each video frame that was processed while scanning is enabled.
      * @param result Scan result of single video frame from Quagga.

@@ -27,16 +27,29 @@ export interface CodeValidatorCallback {
   (code: string): boolean;
 }
 
+/** Barcode scan result. */
+export interface ScanResult {
+  /** String representation of scan result. */
+  code: string;
+
+  /** Promise resolving to Blob image of video frame (if configured). */
+  image?: Promise<Blob>;
+
+  /** Promise resolving to Blob image of drawing overlay (if configured). */
+  overlay?: Promise<Blob>;
+}
+
 /** Deferred promise as a signal between quagga callback and scanCode. */
 interface DeferredScanPromise {
   reject: (reason: Error) => void;
-  resolve: (result: QuaggaJSResultObject) => void;
+  resolve: (result: ScanResult) => void;
 }
 
 /** Barcode scanner with sane defaults and lightweight interface, built on quagga2. */
 export class BarcodeScanner {
   // configuration options from builder helper
   private readonly autoCss: boolean;
+  private readonly resultImages: boolean;
   private readonly codeValidator?: CodeValidatorCallback;
 
   // configuration options from builder helper
@@ -92,6 +105,7 @@ export class BarcodeScanner {
 
     // misc config
     this.autoCss = barcodeReaderBuilder.autoCss;
+    this.resultImages = barcodeReaderBuilder.resultImages;
 
     // configure callbacks
     this.codeValidator = barcodeReaderBuilder.codeValidator;
@@ -190,9 +204,9 @@ export class BarcodeScanner {
 
   /**
    * Request a barcode scan. Scanner must be started (video is streaming).
-   * @returns Promise that resolves with barcode value when it is detected (and validated if configured).
+   * @returns Promise that resolves with ScanResult when it is detected (and validated if configured).
    */
-  async scanCode(): Promise<string> {
+  async scanCode(): Promise<ScanResult> {
     if (!this.isStarted) {
       throw new Error('Scanner not started');
     }
@@ -206,17 +220,9 @@ export class BarcodeScanner {
 
     try {
       // get result via deferred promise (resolved in quagga callback)
-      const result = await new Promise<QuaggaJSResultObject>(
+      return await new Promise<ScanResult>(
         (resolve, reject) => (this.scanDeferred = { resolve, reject })
       );
-
-      // should never happen unless quagga callback has a bug
-      if (!result.codeResult || !result.codeResult.code) {
-        throw new Error('Internal scanner error');
-      }
-
-      // resolve with scanned barcode value
-      return result.codeResult.code;
     } finally {
       // reset so another barcode scan can be requested
       this.scanDeferred = undefined;
@@ -238,6 +244,23 @@ export class BarcodeScanner {
   /** Pause barcode location & detection (video stream must be started). */
   private pause(): void {
     Quagga.pause();
+  }
+
+  /**
+   * Wrap HTMLCanvasElement.toBlob() callback with a Promise.
+   * @param canvas Canvas with image to capture.
+   * @returns Promise that will be resolved after Blob is created.
+   */
+  private getCanvasBlobPromise(canvas: HTMLCanvasElement): Promise<Blob> {
+    return new Promise<Blob>((resolve, reject) =>
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject();
+        }
+      })
+    );
   }
 
   /**
@@ -280,8 +303,18 @@ export class BarcodeScanner {
         this.drawScanline(result);
       }
 
+      const scanResult: ScanResult = {
+        code: result.codeResult.code,
+        image: this.resultImages
+          ? this.getCanvasBlobPromise(Quagga.canvas.dom.image)
+          : undefined,
+        overlay: this.resultImages
+          ? this.getCanvasBlobPromise(Quagga.canvas.dom.overlay)
+          : undefined,
+      };
+
       // set last result for waiting scanCode() to pick up and stop scanning
-      this.scanDeferred.resolve(result);
+      this.scanDeferred.resolve(scanResult);
       this.pause();
     }
   }
