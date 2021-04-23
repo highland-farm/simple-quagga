@@ -62,8 +62,8 @@ export class BarcodeScanner {
       type: 'LiveStream', // stream live from camera device
       constraints: {
         // FIXME: media constraints needs a lot more real world testing
-        width: { min: 1024 }, //        and possibly configurability or detection logic;
-        height: { min: 768 }, //        this usually will select the max resolution
+        width: { min: 800, ideal: 1920, max: 1920 },
+        height: { min: 600, ideal: 1080, max: 1080 },
         facingMode: 'environment', // rear camera on a phone or tablet
         aspectRatio: { min: 1, max: 2 },
       },
