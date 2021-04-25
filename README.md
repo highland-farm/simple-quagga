@@ -5,7 +5,7 @@ Barcode scanner with sane defaults and lightweight interface, built on quagga2. 
 NPM scripts:
 
 - `npm start` to start snowpack dev server & launch examples in browser w/HMR for development
-- `npm run build` to bundle and binplace index.js, TS type declarations, and working examples folder in dist
+- `npm run build` to transpile to ./lib, check/write TS type declarations to ./types, & bundle esm/iife w/working examples folder to ./dist
 - `npm run lint` to check linting rules; also run as part of build (but not git hooks for now)
 - `npm run pretty:check` to check Prettier rules; not run automatically for now
 - `npm run pretty` to apply Prettier rules; not run automatically for now
@@ -14,7 +14,6 @@ Working on:
 
 1. Blob handling for passing back captured video frames and overlays
 1. Actually read the TypeScript handbook and fix na&#239;ve or uninformed design choices
-1. Consider moving TS type declarations to a separate folder
 
 Backlog:
 
@@ -37,3 +36,4 @@ Done:
 1. ~~Bundle: Snowpack? Rollup? Just not browserify~~
 1. ~~Something other than python to server for local testing~~
 1. ~~Consume Quagga2 without passing through dependencies to consumers of this wrapper~~
+1. ~~Consider moving TS type declarations to a separate folder~~

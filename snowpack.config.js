@@ -1,20 +1,13 @@
 module.exports = {
   mount: {
     src: { url: '/' },
+    dist: { url: '/', static: true },
     examples: { url: '/examples', static: true },
   },
   devOptions: {
     openUrl: '/examples/',
   },
-  plugins: ['@snowpack/plugin-typescript'],
-  optimize: {
-    entrypoints: ['src/index.ts'],
-    bundle: true,
-    sourcemap: true,
-    minify: true,
-    target: 'es2018',
-  },
-  buildOptions: {
-    out: 'dist/',
-  },
+  plugins: [
+    ['@snowpack/plugin-typescript', { args: '--emitDeclarationOnly false' }],
+  ],
 };

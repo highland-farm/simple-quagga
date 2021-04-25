@@ -4,7 +4,7 @@
     "module": "ESNext",
     "emitDeclarationOnly": true,
     "declaration": true,
-    "declarationDir": "./dist",
+    "declarationDir": "./types",
     "strict": true,
     "moduleResolution": "node",
     "isolatedModules": true,
