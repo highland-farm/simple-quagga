@@ -57,6 +57,9 @@ export class BarcodeScanner {
   private readonly drawDetectedStyle?: QuaggaJSStyle;
   private readonly drawScanlineStyle?: QuaggaJSStyle;
 
+  /** Viewport DOM reference. */
+  private ViewportElement?: HTMLElement;
+
   /** Quagga and video stream is started or not. */
   private isStarted = false;
 
@@ -114,6 +117,13 @@ export class BarcodeScanner {
     this.drawLocatedStyle = barcodeReaderBuilder.drawLocatedStyle;
     this.drawDetectedStyle = barcodeReaderBuilder.drawDetectedStyle;
     this.drawScanlineStyle = barcodeReaderBuilder.drawScanlineStyle;
+
+    // attempt to attach viewport if available
+    // can try again later during start() if async
+    try {
+      this.attachViewport();
+      // eslint-disable-next-line no-empty
+    } catch {}
   }
 
   /**
@@ -128,28 +138,16 @@ export class BarcodeScanner {
     this.isStarted = true;
 
     try {
+      if (!this.ViewportElement) {
+        this.attachViewport();
+      }
+
+      if (!this.ViewportElement) {
+        throw new Error('Cannot start with an undefined viewport target');
+      }
+
       // insert CSS rules if requested
       if (this.autoCss && !this.isAutoCssApplied) {
-        const domTarget = this.quaggaConfig.inputStream?.target;
-        if (!domTarget) {
-          throw new Error('Cannot apply auto CSS to undefined target');
-        }
-
-        // NOTE: this requires a direct supplied element to have an id
-        const selector =
-          domTarget instanceof HTMLElement
-            ? '#' + domTarget.id
-            : String(domTarget);
-
-        // verify dom target is accessible
-        try {
-          if (!document.querySelector(selector)) {
-            throw new Error(`Cannot find element at selector: ${selector}`);
-          }
-        } catch (err) {
-          throw new Error(`Invalid selector: ${selector}`);
-        }
-
         // create new stylesheet and insert into head
         const style = document.createElement('style');
         document.head.appendChild(style);
@@ -158,6 +156,7 @@ export class BarcodeScanner {
         }
 
         // this positions the drawing overlay correctly over the video and autoscales both to parent container
+        const selector = `#${this.ViewportElement.id}`;
         style.sheet.insertRule(`${selector} {display: flex}`);
         style.sheet.insertRule(`${selector} canvas, video {width: 100%}`);
         style.sheet.insertRule(
@@ -203,6 +202,24 @@ export class BarcodeScanner {
   }
 
   /**
+   * Hide the viewport by setting style.display = none.
+   */
+  hide(): void {
+    if (this.ViewportElement) {
+      this.ViewportElement.style.display = 'none';
+    }
+  }
+
+  /**
+   * Show the viewport by setting style.display = block.
+   */
+  show(): void {
+    if (this.ViewportElement) {
+      this.ViewportElement.style.display = 'block';
+    }
+  }
+
+  /**
    * Request a barcode scan. Scanner must be started (video is streaming).
    * @returns Promise that resolves with ScanResult when it is detected (and validated if configured).
    */
@@ -233,6 +250,30 @@ export class BarcodeScanner {
           this.clearOverlay();
         }
       }, 200);
+    }
+  }
+
+  /** Attempt to attach to the viewport element. */
+  private attachViewport(): void {
+    const domTarget = this.quaggaConfig.inputStream?.target;
+    if (!domTarget) {
+      throw new Error('Viewport target is undefined');
+    }
+
+    // NOTE: this requires a direct supplied element to have an id
+    const selector =
+      domTarget instanceof HTMLElement ? '#' + domTarget.id : String(domTarget);
+
+    // verify dom target is accessible
+    try {
+      const elem = document.querySelector(selector);
+      if (!elem || !(elem instanceof HTMLElement)) {
+        throw new Error(`Cannot find element at selector: ${selector}`);
+      }
+
+      this.ViewportElement = elem;
+    } catch (err) {
+      throw new Error(`Invalid selector: ${selector}`);
     }
   }
 

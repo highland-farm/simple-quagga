@@ -35,6 +35,8 @@ export declare class BarcodeScanner {
     private readonly drawLocatedStyle?;
     private readonly drawDetectedStyle?;
     private readonly drawScanlineStyle?;
+    /** Viewport DOM reference. */
+    private ViewportElement?;
     /** Quagga and video stream is started or not. */
     private isStarted;
     /** Auto CSS stylesheet has been added to document (prevent from adding again on restart). */
@@ -56,10 +58,20 @@ export declare class BarcodeScanner {
      */
     stop(): Promise<void>;
     /**
+     * Hide the viewport by setting style.display = none.
+     */
+    hide(): void;
+    /**
+     * Show the viewport by setting style.display = block.
+     */
+    show(): void;
+    /**
      * Request a barcode scan. Scanner must be started (video is streaming).
      * @returns Promise that resolves with ScanResult when it is detected (and validated if configured).
      */
     scanCode(): Promise<ScanResult>;
+    /** Attempt to attach to the viewport element. */
+    private attachViewport;
     /** Resume barcode location & detection (video stream must be started). */
     private resume;
     /** Pause barcode location & detection (video stream must be started). */
