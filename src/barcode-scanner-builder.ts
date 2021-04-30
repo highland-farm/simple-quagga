@@ -10,6 +10,7 @@ export class BarcodeScannerBuilder {
   private readonly _domTarget: HTMLElement | string;
   private readonly _readerTypes: ReaderType[] = [];
   private _autoCss = false;
+  private _resultImages = false;
   private _codeValidator?: CodeValidatorCallback;
   private _drawLocatedStyle?: QuaggaJSStyle;
   private _drawDetectedStyle?: QuaggaJSStyle;
@@ -38,6 +39,16 @@ export class BarcodeScannerBuilder {
    */
   withAutoCss(enabled = true): BarcodeScannerBuilder {
     this._autoCss = enabled;
+    return this;
+  }
+
+  /**
+   * Configure whether scan result includes image Blobs of the video frame and drawing overlay.
+   * @param enabled Enable result images functionality.
+   * @returns Self for chaining builder methods.
+   */
+  withResultImages(enabled = true): BarcodeScannerBuilder {
+    this._resultImages = enabled;
     return this;
   }
 
@@ -127,6 +138,10 @@ export class BarcodeScannerBuilder {
 
   get autoCss(): boolean {
     return this._autoCss;
+  }
+
+  get resultImages(): boolean {
+    return this._resultImages;
   }
 
   get codeValidator(): CodeValidatorCallback | undefined {

@@ -2,10 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Vanilla JavaScript Simple Barcode Scanner Example</title>
+    <title>Vanilla JavaScript Show Image Results Barcode Scanner Example</title>
   </head>
   <body>
-    <h2>Vanilla JavaScript Simple Barcode Scanner Example</h2>
+    <h2>Vanilla JavaScript Show Image Results Scanner Example</h2>
     <ol>
       <li>Click 'Start Video' to initialize and begin camera stream.</li>
       <li>Click 'Scan Code' to request a scan (video must be started).</li>
@@ -15,6 +15,10 @@
         Configured to scan
         <a href="https://en.wikipedia.org/wiki/Code_128">Code 128</a> barcodes
         with no validation.
+      </li>
+      <li>
+        Scan results, including video frame & drawing overlay, will be appended
+        below.
       </li>
     </ol>
     <p>
@@ -45,10 +49,37 @@
         new BarcodeScannerBuilder('#reader') // viewport provided by CSS direct id selector
           .addReader(ReaderType.CODE_128)
           .withAutoCss() // automatically position overlay over video and autoscale to container
+          .withResultImages() // include image and overlay blobs in result
           .withDrawLocated() // draw boxes around potential code locations in the video frame
           .withDrawDetected() // draw a box around full code when detected (and validated if configured)
           .withDrawScanline() // draw a 1D scanline to indicate where the detected code was read
           .build();
+
+      // build img from blob
+      let buildImage = (blob, isOverlay) => {
+        let img = document.createElement('img');
+        let url = URL.createObjectURL(blob);
+        img.onload = () => URL.revokeObjectURL(url);
+        img.style = `width: 100%${isOverlay ? '; margin-left: -100%' : ''}`;
+        img.src = url;
+        return img;
+      };
+
+      // append result with code and overlay positioned over image
+      let appendResult = (code, [image, overlay]) => {
+        let flex = document.createElement('div');
+        flex.style = 'width: 320px; display: flex';
+        flex.appendChild(buildImage(image, false));
+        flex.appendChild(buildImage(overlay, true));
+
+        let div = document.createElement('div');
+        div.style = 'margin-top: 10px';
+        div.appendChild(document.createTextNode(code));
+        div.appendChild(document.createElement('br'));
+        div.appendChild(flex);
+
+        document.body.appendChild(div);
+      };
 
       // request code from running scanner
       document.getElementById('scan_btn').addEventListener('click', (event) => {
@@ -61,7 +92,12 @@
         // request code scan
         scanner
           .scanCode()
-          .then((r) => (e.innerText = r.code)) // success: show scanned code
+          .then((r) => {
+            e.innerText = r.code;
+            Promise.all([r.image, r.overlay]).then((values) =>
+              appendResult(r.code, values)
+            );
+          }) // success: show scanned code
           .catch((err) => {
             e.innerText = err;
             throw err;

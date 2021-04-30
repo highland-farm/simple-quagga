@@ -1,6 +1,14 @@
 # Simple Quagga Barcode Scanner
 
-Barcode scanner with sane defaults and lightweight interface, built on quagga2. WIP on private repo for now.
+Barcode scanner with sane defaults and lightweight interface, built on quagga2. Interfaces are not complete or final, but it is functional. Since quagga2 comes bundled it is included as a devDependency only.
+
+Look in `examples` to see how to use in browser as an iife script or esm module. Can also be used as a dependency when bundling for a lib or app. Uses snowpack for development and esbuild for transpiling/bundling/minifying.
+
+Package folders:
+
+- `/types` : TypeScript definitions
+- `/dist` : ESM & IIFE browser bundles
+- `/lib` : ESM module unbundled
 
 NPM scripts:
 
@@ -12,7 +20,6 @@ NPM scripts:
 
 Working on:
 
-1. Blob handling for passing back captured video frames and overlays
 1. Actually read the TypeScript handbook and fix na&#239;ve or uninformed design choices
 
 Backlog:
@@ -20,7 +27,7 @@ Backlog:
 1. Torch (flashlight) and zoom support for devices that support it
 1. Beeeeeeeeeeep. Beep
 1. Better scan quality checks (code component error thresholds) without custom format validator
-1. Make repo public and push alpha version to npmjs
+1. Decide if builder/options pattern is a good idea for init
 1. Testing, UTs, etc (you know, maybe... eventually)
 1. Intelligent selection of resolution and other options via MediaDevices.getSupportedConstraints()
 1. Camera device selection via MediaDevices.enumerateDevices()
@@ -37,3 +44,5 @@ Done:
 1. ~~Something other than python to server for local testing~~
 1. ~~Consume Quagga2 without passing through dependencies to consumers of this wrapper~~
 1. ~~Consider moving TS type declarations to a separate folder~~
+1. ~~Blob handling for passing back captured video frames and overlays~~
+1. ~~Make repo public and push alpha version to npmjs~~

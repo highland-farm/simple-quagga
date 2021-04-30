@@ -18,23 +18,31 @@ export declare enum ReaderType {
 export interface CodeValidatorCallback {
     (code: string): boolean;
 }
+/** Barcode scan result. */
+export interface ScanResult {
+    /** String representation of scan result. */
+    code: string;
+    /** Promise resolving to Blob image of video frame (if configured). */
+    image?: Promise<Blob>;
+    /** Promise resolving to Blob image of drawing overlay (if configured). */
+    overlay?: Promise<Blob>;
+}
 /** Barcode scanner with sane defaults and lightweight interface, built on quagga2. */
 export declare class BarcodeScanner {
     private readonly autoCss;
+    private readonly resultImages;
     private readonly codeValidator?;
     private readonly drawLocatedStyle?;
     private readonly drawDetectedStyle?;
     private readonly drawScanlineStyle?;
+    /** Viewport DOM reference. */
+    private ViewportElement?;
     /** Quagga and video stream is started or not. */
     private isStarted;
-    /** Code scanning (location/detection) is started or not. */
-    private isScanning;
     /** Auto CSS stylesheet has been added to document (prevent from adding again on restart). */
     private isAutoCssApplied;
-    /** Number of scanCode() promises outstanding (callers waiting for a code scan). */
-    private numWaiting;
-    /** Unclaimed code scan result (a waiting scanCode() caller will pick it up). */
-    private lastResult?;
+    /** Used to signal back to scanCode when there is a result. */
+    private scanDeferred?;
     /** Default config object with sane defaults. */
     private readonly quaggaConfig;
     /** @param barcodeReaderBuilder Helper to configure barcode scanner. */
@@ -50,14 +58,30 @@ export declare class BarcodeScanner {
      */
     stop(): Promise<void>;
     /**
-     * Request a barcode scan. Scanner must be started (video is streaming).
-     * @returns Promise that resolves with barcode value when it is detected (and validated if configured).
+     * Hide the viewport by setting style.display = none.
      */
-    scanCode(): Promise<string>;
+    hide(): void;
+    /**
+     * Show the viewport by setting style.display = block.
+     */
+    show(): void;
+    /**
+     * Request a barcode scan. Scanner must be started (video is streaming).
+     * @returns Promise that resolves with ScanResult when it is detected (and validated if configured).
+     */
+    scanCode(): Promise<ScanResult>;
+    /** Attempt to attach to the viewport element. */
+    private attachViewport;
     /** Resume barcode location & detection (video stream must be started). */
     private resume;
     /** Pause barcode location & detection (video stream must be started). */
     private pause;
+    /**
+     * Wrap HTMLCanvasElement.toBlob() callback with a Promise.
+     * @param canvas Canvas with image to capture.
+     * @returns Promise that will be resolved after Blob is created.
+     */
+    private getCanvasBlobPromise;
     /**
      * Quagga callback on each video frame that was processed while scanning is enabled.
      * @param result Scan result of single video frame from Quagga.

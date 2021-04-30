@@ -1,5 +1,5 @@
 {
-  "name": "@highlandfarm/simple-quagga",
+  "name": "@highland-farm/simple-quagga",
   "version": "0.1.0",
   "description": "Barcode scanner with sane defaults and lightweight interface, built on quagga2.",
   "repository": "github:highland-farm/simple-quagga",
@@ -22,7 +22,6 @@
   "keywords": [],
   "author": "Josh Storz <josh@joshstorz.com>",
   "license": "MIT",
-  "private": true,
   "publishConfig": {
     "access": "public"
   },

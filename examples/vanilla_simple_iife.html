@@ -60,7 +60,7 @@
         // request code scan
         scanner
           .scanCode()
-          .then((c) => (e.innerText = c)) // success: show scanned code
+          .then((r) => (e.innerText = r.code)) // success: show scanned code
           .catch((err) => {
             e.innerText = err;
             throw err;
@@ -86,16 +86,17 @@
         });
 
       // toggle viewport visibility
+      let isVisible = true;
       document.getElementById('hide_btn').addEventListener('click', (event) => {
         const btn = event.target;
-        const e = document.getElementById('reader');
-        if (e.style.display === 'none') {
-          e.style.display = 'block';
-          btn.innerText = 'Hide Video';
-        } else {
-          e.style.display = 'none';
+        if (isVisible) {
+          scanner.hide();
           btn.innerText = 'Show Video';
+        } else {
+          scanner.show();
+          btn.innerText = 'Hide Video';
         }
+        isVisible ^= true;
       });
     </script>
   </body>
