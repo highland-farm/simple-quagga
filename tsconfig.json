@@ -1,15 +1,18 @@
 {
   "compilerOptions": {
-    "target": "es2015",
-    "module": "commonjs",
+    "target": "ESNext",
+    "module": "ESNext",
+    "emitDeclarationOnly": true,
     "declaration": true,
-    "outDir": "./dist",
+    "declarationDir": "./types",
     "strict": true,
     "moduleResolution": "node",
+    "isolatedModules": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "useDefineForClassFields": true,
+    "importsNotUsedAsValues": "error"
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*"]
 }
