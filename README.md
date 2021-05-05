@@ -18,6 +18,8 @@ NPM scripts:
 - `npm run pretty:check` to check Prettier rules; not run automatically for now
 - `npm run pretty` to apply Prettier rules; not run automatically for now
 
+![115135950-49331d80-9fd1-11eb-988b-5705bad3dc14](https://user-images.githubusercontent.com/72341/117096800-ee166000-ad1e-11eb-94ff-b2cd4dec9204.png)
+
 Working on:
 
 1. Actually read the TypeScript handbook and fix na&#239;ve or uninformed design choices
