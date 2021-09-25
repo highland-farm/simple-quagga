@@ -294,17 +294,27 @@ export class BarcodeScanner {
   /**
    * Wrap HTMLCanvasElement.toBlob() callback with a Promise.
    * @param canvas Canvas with image to capture.
+   * @param imageType Image format passed to HTMLCanvasElement.toBlob().
+   * @param imageQuality Compression quality passed to HTMLCanvasElement.toBlob().
    * @returns Promise that will be resolved after Blob is created.
    */
-  private getCanvasBlobPromise(canvas: HTMLCanvasElement): Promise<Blob> {
+  private getCanvasBlobPromise(
+    canvas: HTMLCanvasElement,
+    imageType?: string,
+    imageQuality?: number
+  ): Promise<Blob> {
     return new Promise<Blob>((resolve, reject) =>
-      canvas.toBlob((blob) => {
-        if (blob) {
-          resolve(blob);
-        } else {
-          reject();
-        }
-      })
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject();
+          }
+        },
+        imageType,
+        imageQuality
+      )
     );
   }
 
@@ -351,10 +361,18 @@ export class BarcodeScanner {
       const scanResult: ScanResult = {
         code: result.codeResult.code,
         image: this.resultImages
-          ? this.getCanvasBlobPromise(Quagga.canvas.dom.image)
+          ? this.getCanvasBlobPromise(
+              Quagga.canvas.dom.image,
+              this.resultImagesType,
+              this.resultImagesQuality
+            )
           : undefined,
         overlay: this.resultImages
-          ? this.getCanvasBlobPromise(Quagga.canvas.dom.overlay)
+          ? this.getCanvasBlobPromise(
+              Quagga.canvas.dom.overlay,
+              this.resultImagesType,
+              this.resultImagesQuality
+            )
           : undefined,
       };
 

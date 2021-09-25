@@ -81,6 +81,8 @@ export declare class BarcodeScanner {
     /**
      * Wrap HTMLCanvasElement.toBlob() callback with a Promise.
      * @param canvas Canvas with image to capture.
+     * @param imageType Image format passed to HTMLCanvasElement.toBlob().
+     * @param imageQuality Compression quality passed to HTMLCanvasElement.toBlob().
      * @returns Promise that will be resolved after Blob is created.
      */
     private getCanvasBlobPromise;
