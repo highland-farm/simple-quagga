@@ -31,6 +31,8 @@ export interface ScanResult {
 export declare class BarcodeScanner {
     private readonly autoCss;
     private readonly resultImages;
+    private readonly resultImagesType?;
+    private readonly resultImagesQuality?;
     private readonly codeValidator?;
     private readonly drawLocatedStyle?;
     private readonly drawDetectedStyle?;

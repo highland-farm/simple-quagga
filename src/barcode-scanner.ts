@@ -50,6 +50,8 @@ export class BarcodeScanner {
   // configuration options from builder helper
   private readonly autoCss: boolean;
   private readonly resultImages: boolean;
+  private readonly resultImagesType?: string;
+  private readonly resultImagesQuality?: number;
   private readonly codeValidator?: CodeValidatorCallback;
 
   // configuration options from builder helper
@@ -109,6 +111,8 @@ export class BarcodeScanner {
     // misc config
     this.autoCss = barcodeReaderBuilder.autoCss;
     this.resultImages = barcodeReaderBuilder.resultImages;
+    this.resultImagesType = barcodeReaderBuilder.resultImagesType;
+    this.resultImagesQuality = barcodeReaderBuilder.resultImagesQuality;
 
     // configure callbacks
     this.codeValidator = barcodeReaderBuilder.codeValidator;
