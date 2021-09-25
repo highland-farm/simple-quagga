@@ -6,6 +6,8 @@ export declare class BarcodeScannerBuilder {
     private readonly _readerTypes;
     private _autoCss;
     private _resultImages;
+    private _resultImagesType?;
+    private _resultImagesQuality?;
     private _codeValidator?;
     private _drawLocatedStyle?;
     private _drawDetectedStyle?;
@@ -28,9 +30,11 @@ export declare class BarcodeScannerBuilder {
     /**
      * Configure whether scan result includes image Blobs of the video frame and drawing overlay.
      * @param enabled Enable result images functionality.
+     * @param imagesType Image format (ex. "image/png", "image/jpeg", "image/webp"), passed to HTMLCanvasElement.toBlob().
+     * @param imagesQuality Compression quality between 0 and 1 for lossy formats only, passed to HTMLCanvasElement.toBlob().
      * @returns Self for chaining builder methods.
      */
-    withResultImages(enabled?: boolean): BarcodeScannerBuilder;
+    withResultImages(enabled?: boolean, imagesType?: string, imagesQuality?: number): BarcodeScannerBuilder;
     /**
      * Configure custom validator for detected codes. If set, will be called to verify a code is valid before accepting a scan.
      * @param callback Callback method for code validation.
@@ -67,6 +71,8 @@ export declare class BarcodeScannerBuilder {
     get readerTypes(): ReaderType[];
     get autoCss(): boolean;
     get resultImages(): boolean;
+    get resultImagesType(): string | undefined;
+    get resultImagesQuality(): number | undefined;
     get codeValidator(): CodeValidatorCallback | undefined;
     get drawLocatedStyle(): QuaggaJSStyle | undefined;
     get drawDetectedStyle(): QuaggaJSStyle | undefined;
