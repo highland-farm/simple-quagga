@@ -368,11 +368,7 @@ export class BarcodeScanner {
             )
           : undefined,
         overlay: this.resultImages
-          ? this.getCanvasBlobPromise(
-              Quagga.canvas.dom.overlay,
-              this.resultImagesType,
-              this.resultImagesQuality
-            )
+          ? this.getCanvasBlobPromise(Quagga.canvas.dom.overlay, 'image/png')
           : undefined,
       };
 
