@@ -1,6 +1,6 @@
 {
   "name": "@highland-farm/simple-quagga",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Barcode scanner with sane defaults and lightweight interface, built on quagga2.",
   "repository": "github:highland-farm/simple-quagga",
   "module": "lib/index.js",
